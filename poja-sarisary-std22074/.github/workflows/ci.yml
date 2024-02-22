@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      AWS_REGION: eu-west-3
+
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: hei-school/aws-credentials-setter@v1.0.3
+        with:
+          secrets: ${{ toJSON(secrets) }}
+          region: ${{ env.AWS_REGION }}
+
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+      - run: chmod +x gradlew
+      - run: ./gradlew test
+
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+
+      - run: chmod +x format.sh
+      - run: ./format.sh && git diff --exit-code
+
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to AWS Elastic Beanstalk
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-3
+
+      - name: Create application version
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name LaSary \
+            --version-label $GITHUB_SHA \
+            --source-bundle S3Bucket=$GITHUB_REPOSITORY,S3Key=$GITHUB_SHA.zip
+
+      - name: Deploy to AWS Elastic Beanstalk
+        run: |
+          aws elasticbeanstalk update-environment \
+            --application-name Votre-Nom-Application \
+            --environment-name Votre-Environment-Name \
+            --version-label $GITHUB_SHA
+
