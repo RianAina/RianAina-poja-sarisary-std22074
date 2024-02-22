@@ -1,3 +1,5 @@
+
+
 public String transformImage(String id, MultiplepartFileimage) throws IOException {
     String suffix = "." + FilenameUtils.getExtension(image.getOriginalFilename());
     String prefixOriginal = id + "-initial";
@@ -10,5 +12,9 @@ public String transformImage(String id, MultiplepartFileimage) throws IOExceptio
     File grayScaled = this.toGrayScale(id, toUpload)
 
 
-        bucketComponment
+        bucketComponent.Upload(toUpload, bucketKeyOriginal);
+        bucketComponent.Upload(grayscaled, bucketKeyTransformed);
+
+
+
         }
