@@ -14,7 +14,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 5
 
     env:
       AWS_REGION: eu-west-3
@@ -63,14 +63,14 @@ jobs:
       - name: Create application version
         run: |
           aws elasticbeanstalk create-application-version \
-            --application-name LaSary \
+            --application-name LaSarySTD22074 \
             --version-label $GITHUB_SHA \
             --source-bundle S3Bucket=$GITHUB_REPOSITORY,S3Key=$GITHUB_SHA.zip
 
       - name: Deploy to AWS Elastic Beanstalk
         run: |
           aws elasticbeanstalk update-environment \
-            --application-name Votre-Nom-Application \
-            --environment-name Votre-Environment-Name \
+            --application-name LaSarySTD22074 \
+            --environment-name HEI_Lab \
             --version-label $GITHUB_SHA
 
